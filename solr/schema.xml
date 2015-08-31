@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE schema [ ]>
+<schema name="spell" version="1.5" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+	<fieldType name="string" class="solr.StrField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="boolean" class="solr.BoolField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="sint" class="solr.TrieIntField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="slong" class="solr.TrieLongField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="sfloat" class="solr.TrieFloatField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="sdouble" class="solr.TrieDoubleField"
+		sortMissingLast="true" omitNorms="true" />
+	<fieldType name="date" class="solr.TrieDateField"
+		sortMissingLast="true" omitNorms="true" />
+
+        <fieldType name="text" class="solr.TextField">
+           <analyzer>
+    	      <tokenizer class="solr.StandardTokenizerFactory" />
+      	      <filter class="solr.LowerCaseFilterFactory" />
+           </analyzer>
+        </fieldType>
+
+	<field name="id" type="slong" indexed="true" stored="true" />
+
+	<field name="isin" type="string" indexed="true" stored="true" docValues="true" />
+
+	<field name="title" type="text" indexed="true" stored="true" />
+	<field name="author" type="text" indexed="true" stored="true" />
+	<field name="publisher" type="text" indexed="true" stored="true" />
+
+	<field name="title_str" type="string" indexed="true" stored="true" docValues="true" />
+	<field name="author_str" type="string" indexed="true" stored="true" docValues="true" />
+	<field name="publisher_str" type="string" indexed="true" stored="true" docValues="true" />
+
+	<field name="year" type="sint" indexed="true" stored="true" docValues="true" />
+
+	<field name="price" type="sfloat" indexed="true" stored="true" />
+
+	<field name="_version_" type="slong" indexed="true" stored="true"
+		multiValued="false" />
+
+	<uniqueKey>id</uniqueKey>
+
+        <copyField source="author" dest="author_str" />
+        <copyField source="title" dest="title_str" />
+        <copyField source="publisher" dest="publisher_str" />
+
+	<!-- field for the QueryParser to use when an explicit fieldname is absent -->
+	<!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
+	<defaultSearchField>title</defaultSearchField>
+	<solrQueryParser defaultOperator="AND" />
+
+ <!-- prova -->
+
+</schema>

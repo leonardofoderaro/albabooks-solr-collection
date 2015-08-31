@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE config [ ]>
+<config xmlns:xi="http://www.w3.org/2001/XInclude">
+
+	<luceneMatchVersion>4.8</luceneMatchVersion>
+
+        <lib dir="/opt/solr/solr-5.2.1/custom-libs/" regex=".*\.jar" />
+
+	<directoryFactory name="DirectoryFactory"
+		class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}" />
+
+	<indexConfig>
+		<!-- The maximum number of simultaneous threads that may be indexing documents 
+			at once in IndexWriter; if more than this many threads arrive they will wait 
+			for others to finish. Default in Solr/Lucene is 8. -->
+		<!-- <maxIndexingThreads>8</maxIndexingThreads> -->
+		<!-- If true, IndexReaders will be opened/reopened from the IndexWriter 
+			instead of from the Directory. Hosts in a master/slave setup should have 
+			this set to false while those in a SolrCloud cluster need to be set to true. 
+			Default: true -->
+		<!-- <nrtMode>true</nrtMode> -->
+
+                <lockType>simple</lockType>
+
+    <!-- Unlock On Startup
+
+         If true, unlock any held write or commit locks on startup.
+         This defeats the locking mechanism that allows multiple
+         processes to safely access a lucene index, and should be used
+         with care. Default is "false".
+
+         This is not needed if lock type is 'single'
+     -->
+
+           <unlockOnStartup>true</unlockOnStartup>
+
+	</indexConfig>
+
+	<jmx />
+
+	<updateHandler class="solr.DirectUpdateHandler2">
+	    <autoCommit>
+	      <maxDocs>10000</maxDocs>
+	      <maxTime>1000</maxTime>
+	      <openSearcher>false</openSearcher>
+	    </autoCommit>
+		<!-- <autoCommit> -->
+		<!-- <maxDocs>10000</maxDocs> <! - - maximum uncommited docs before autocommit 
+			triggered - -> -->
+		<!-- <maxTime>3600000</maxTime> <! - - maximum time (in MS) after adding 
+			a doc before an autocommit is triggered - -> -->
+		<!-- <! - - <openSearcher>false</openSearcher> SOLR 4.0. Optionally don't 
+			open a searcher on hard commit. This is useful to minimize the size of transaction 
+			logs that keep track of uncommitted updates. - - > -->
+		<!-- </autoCommit> -->
+		<!-- <! - - SoftAutoCommit -->
+
+		<!-- Perform a 'soft' commit automatically under certain conditions. -->
+		<!-- This commit avoids ensuring that data is synched to disk. -->
+
+		<!-- maxDocs - Maximum number of documents to add since the last -->
+		<!-- soft commit before automaticly triggering a new soft commit. -->
+
+		<!-- maxTime - Maximum amount of time in ms that is allowed to pass -->
+		<!-- since a document was added before automaticly -->
+		<!-- triggering a new soft commit. -->
+		<!-- - -> -->
+
+		<!-- <autoSoftCommit> -->
+		<!-- <maxTime>10000</maxTime> -->
+		<!-- </autoSoftCommit> -->
+		<updateLog>
+			<str name="dir">${solr.data.dir:}</str>
+		</updateLog>
+
+		<!-- The RunExecutableListener executes an external command from a hook 
+			such as postCommit or postOptimize. exe - the name of the executable to run 
+			dir - dir to use as the current working directory. (default=".") wait - the 
+			calling thread waits until the executable returns. (default="true") args 
+			- the arguments to pass to the program. (default is none) env - environment 
+			variables to set. (default is none) -->
+	</updateHandler>
+
+
+	<query>
+		<maxBooleanClauses>1024</maxBooleanClauses>
+		<filterCache class="solr.FastLRUCache" size="1500"
+			initialSize="1000" autowarmCount="0" />
+		<queryResultCache class="solr.LRUCache" size="8096"
+			initialSize="1024" autowarmCount="0" />
+		<documentCache class="solr.FastLRUCache" size="10240"
+			initialSize="4096" autowarmCount="0" />
+
+		<!-- custom cache currently used by block join -->
+		<cache name="perSegFilter" class="solr.search.LRUCache" size="10"
+			initialSize="0" autowarmCount="10" regenerator="solr.NoOpRegenerator" />
+
+		<enableLazyFieldLoading>true</enableLazyFieldLoading>
+
+
+		<queryResultWindowSize>48</queryResultWindowSize>
+		<queryResultMaxDocsCached>200</queryResultMaxDocsCached>
+
+		<listener event="newSearcher" class="solr.QuerySenderListener">
+			<arr name="queries">
+				<!-- <lst> <str name="q">solr</str> <str name="start">0</str> <str name="rows">10</str> 
+					</lst> <lst> <str name="q">rocks</str> <str name="start">0</str> <str name="rows">10</str> 
+					</lst> <lst><str name="q">static newSearcher warming query from solrconfig.xml</str></lst> -->
+			</arr>
+		</listener>
+
+		<!-- a firstSearcher event is fired whenever a new searcher is being prepared 
+			but there is no current registered searcher to handle requests or to gain 
+			autowarming data from. -->
+		<listener event="firstSearcher" class="solr.QuerySenderListener">
+			<arr name="queries">
+				<!-- <lst> <str name="q">nikon</str><str name="start">0</str><str name="rows">10</str></lst> -->
+				<!-- <lst><str name="q">nokia</str></lst> -->
+			</arr>
+		</listener>
+
+		<!-- If a search request comes in and there is no current registered searcher, 
+			then immediately register the still warming searcher and use it. If "false" 
+			then all requests will block until the first searcher is done warming. -->
+		<useColdSearcher>false</useColdSearcher>
+
+		<!-- Maximum number of searchers that may be warming in the background 
+			concurrently. An error is returned if this limit is exceeded. Recommend 1-2 
+			for read-only slaves, higher for masters w/o cache warming. -->
+		<maxWarmingSearchers>2</maxWarmingSearchers>
+
+	</query>
+
+	<!-- Request Parsing These settings indicate how Solr Requests may be parsed, 
+		and what restrictions may be placed on the ContentStreams from those requests 
+		enableRemoteStreaming - enables use of the stream.file and stream.url parameters 
+		for specifying remote streams. multipartUploadLimitInKB - specifies the max 
+		size (in KiB) of Multipart File Uploads that Solr will allow in a Request. 
+		formdataUploadLimitInKB - specifies the max size (in KiB) of form data (application/x-www-form-urlencoded) 
+		sent via POST. You can use POST to pass request parameters not fitting into 
+		the URL. addHttpRequestToContext - if set to true, it will instruct the requestParsers 
+		to include the original HttpServletRequest object in the context map of the 
+		SolrQueryRequest under the key "httpRequest". It will not be used by any 
+		of the existing Solr components, but may be useful when developing custom 
+		plugins. *** WARNING *** The settings below authorize Solr to fetch remote 
+		files, You should make sure your system has some authentication before using 
+		enableRemoteStreaming="true" -->
+
+	<requestDispatcher handleSelect="true">
+		<!--Make sure your system has some authentication before enabling remote 
+			streaming! -->
+		<requestParsers enableRemoteStreaming="false"
+			multipartUploadLimitInKB="2048" />
+		<!--  httpCaching never304="true" /> -->
+	</requestDispatcher>
+
+
+	<requestHandler name="standard" class="solr.SearchHandler"> 
+		<lst name="defaults"> 
+			<str name="echoParams">explicit</str> 
+			<int name="rows">10</int> 
+			<str name="fl">*</str> 
+			<str name="version">2.2</str> 
+		</lst> 
+
+		<!-- TODO can this be automatic on plugin load? can it register by itself? -->
+                <arr name="first-components">
+                   <str>loader</str>
+                </arr>
+	</requestHandler> 
+
+        <searchComponent name="terms" class="solr.TermsComponent"/>
+
+<searchComponent name="tvComponent" class="org.apache.solr.handler.component.TermVectorComponent"/>
+
+<requestHandler name="/terms" class="solr.SearchHandler" startup="lazy">
+  <lst name="defaults">
+    <bool name="terms">true</bool>
+    <bool name="distrib">false</bool>
+  </lst>
+  <arr name="components">
+    <str>terms</str>
+  </arr>
+</requestHandler>
+
+
+
+
+<requestHandler name="/tvrh" class="org.apache.solr.handler.component.SearchHandler">
+  <lst name="defaults">
+    <bool name="tv">true</bool>
+  </lst>
+  <arr name="last-components">
+    <str>tvComponent</str>
+  </arr>
+</requestHandler>
+
+
+        <requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
+          <lst name="defaults">
+            <str name="config">dataimport.xml</str>
+          </lst>
+        </requestHandler>
+
+	<requestHandler name="/get" class="solr.RealTimeGetHandler">
+		<lst name="defaults">
+			<str name="omitHeader">true</str>
+			<str name="wt">json</str>
+			<str name="indent">true</str>
+		</lst>
+	</requestHandler>
+
+	<requestHandler name="/update" class="solr.UpdateRequestHandler" />
+
+	<requestHandler name="/update/csv" class="solr.CSVRequestHandler"
+		startup="lazy" />
+
+	<requestHandler name="/admin/luke"
+		class="org.apache.solr.handler.admin.LukeRequestHandler" />
+	<!--requestHandler name="/admin/system" class="org.apache.solr.handler.admin.SystemInfoHandler" 
+		/> <requestHandler name="/admin/plugins" class="org.apache.solr.handler.admin.PluginInfoHandler" 
+		/> <requestHandler name="/admin/threads" class="org.apache.solr.handler.admin.ThreadDumpHandler" 
+		/> <requestHandler name="/admin/properties" class="org.apache.solr.handler.admin.PropertiesRequestHandler" 
+		/> <requestHandler name="/admin/ping" class="PingRequestHandler"> <lst name="defaults"> 
+		<str name="qt">standard</str> <str name="q">sku:123</str> <str name="echoParams">all</str> 
+		</lst> </requestHandler> -->
+	<requestHandler name="/debug/dump" class="solr.DumpRequestHandler">
+		<lst name="defaults">
+			<str name="echoParams">explicit</str> <!-- for all params (including the default etc) use: 'all' -->
+			<str name="echoHandler">true</str>
+		</lst>
+	</requestHandler>
+
+	<requestHandler name="/analysis/field" class="solr.FieldAnalysisRequestHandler" />
+	<!-- ################################################### -->
+
+	<requestHandler name="/admin/" class="solr.admin.AdminHandlers" />
+
+	<requestHandler name="/admin/file"
+		class="org.apache.solr.handler.admin.ShowFileRequestHandler">
+	</requestHandler>
+
+	<requestHandler name="/replication" class="solr.ReplicationHandler">
+	</requestHandler>
+
+
+	<!-- ################################################### -->
+	<queryResponseWriter name="xml" class="solr.XMLResponseWriter"
+		default="true" />
+	<queryResponseWriter name="json" class="solr.JSONResponseWriter" />
+	<!--queryResponseWriter name="python" class="solr.PythonResponseWriter"/> 
+		<queryResponseWriter name="phps" class="solr.PHPSerializedResponseWriter"/> 
+		<queryResponseWriter name="velocity" class="solr.VelocityResponseWriter"/ -->
+	<queryResponseWriter name="xslt" class="solr.XSLTResponseWriter">
+		<int name="xsltCacheLifetimeSeconds">1</int>
+	</queryResponseWriter>
+
+
+	<!-- config for the admin interface -->
+	<admin>
+		<defaultQuery>*:*</defaultQuery>
+		<!-- pingQuery should be "URLish" ... & separated key=val pairs ... 
+			but there shouldn't be any URL escaping of the values -->
+	</admin>
+
+        
+       <searchComponent name="loader" class="alba.solr.core.Loader">
+          <lst name="packagesToScan">
+            <str>examples.alba.books</str>
+          </lst>
+        </searchComponent>
+
+
+
+        <transformer name="alba" class="alba.solr.transformers.Transformer" />
+        <valueSourceParser name="alba" class="alba.solr.core.DynamicValueSourceParser"/>
+        <queryParser name="alba" class="alba.solr.core.DynamicQueryParser" />
+        <queryResponseWriter name="alba" class="alba.solr.core.DynamicResponseWriter" />
+
+<!--
+        <valueSourceParser name="call" class="org.apache.solr.contrib.pluggable.functionqueries.PluggableValueSourceParser"/>
+-->
+
+
+
+
+</config>
