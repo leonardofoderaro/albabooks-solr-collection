@@ -196,11 +196,13 @@
 </requestHandler>
 
 
+<!--
         <requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
           <lst name="defaults">
             <str name="config">dataimport.xml</str>
           </lst>
         </requestHandler>
+-->
 
 	<requestHandler name="/get" class="solr.RealTimeGetHandler">
 		<lst name="defaults">
