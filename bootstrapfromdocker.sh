@@ -1,4 +1,5 @@
 
+gunzip albabooks.csv.gz
 
 PATH_TO_ZKCLI=/opt/solr/solr-5.2.1/server/scripts/cloud-scripts
 
