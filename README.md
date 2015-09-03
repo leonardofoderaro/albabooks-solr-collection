@@ -11,10 +11,20 @@ to load the sample data:
 
 you can also load the sample dataset in the provided docker container:
 
-docker run -dit -p 9090:8983 -p 9091:9983 alba/latest
+short version:
 
-/opt/solr/solr-5.2.1/bin/post -host 192.168.99.100 -port 9090 -c albabooks_shard1_replica1 albabooks.csv
-(substitute host and ports with the correct values)
+    ./bootstrapfromdocker.sh
+
+long version:
+
+- run the container:
+    docker run -dit -p 9090:8983 -p 9091:9983 alba/latest
+
+- load the data:
+
+    /opt/solr/solr-5.2.1/bin/post -host 192.168.99.100 -port 9090 -c albabooks_shard1_replica1 albabooks.csv
+    (substitute host and ports with the correct values)
+
 
 you can find the Docker container repo [here](https://github.com/leonardofoderaro/alba-docker).
 
