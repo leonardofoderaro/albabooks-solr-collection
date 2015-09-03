@@ -9,11 +9,15 @@ to load the sample data:
 
 /path/to/solrcloud/bin/post -c albabooks /path/to/albabooks.csv  (you can find it gzipped in the datagen repo)
 
-if using the docker image:
+you can also load the sample dataset in the provided docker container:
+
+docker pull alba/latest
 
 /opt/solr/solr-5.2.1/bin/post -host 192.168.99.100 -port 9090 -c albabooks_shard1_replica1 albabooks.csv
 (substitute host and ports with the correct values)
 
+you can find the Docker container repo [here](https://github.com/leonardofoderaro/alba-docker).
+
 keep in mind that prices are just random values ;-)
 
-if you need to regenerate the sample data please refer to the repo datagen.
+if you want to know more about how sample dataset has been obtained and preprocessed or if you want to regenerate it please refer to the [albabooks-datagen](https://github.com/leonardofoderaro/albabooks-datagen) repo.
