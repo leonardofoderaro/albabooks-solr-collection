@@ -277,7 +277,7 @@
         <transformer name="alba" class="alba.solr.transformers.Transformer" />
         <valueSourceParser name="alba" class="alba.solr.core.DynamicValueSourceParser"/>
         <queryParser name="alba" class="alba.solr.core.DynamicQueryParser" />
-        <queryResponseWriter name="alba" class="alba.solr.core.DynamicResponseWriter" />
+        <queryResponseWriter name="alba" class="alba.solr.core.AlbaResponseWriter" />
 
 <!--
         <valueSourceParser name="call" class="org.apache.solr.contrib.pluggable.functionqueries.PluggableValueSourceParser"/>
